@@ -1,0 +1,29 @@
+{
+  "name": "rhytm-trainer",
+  "version": "1.0.0",
+  "description": "Simple web app for rhythm ear training.",
+  "main": "app.js",
+  "scripts": {
+    "build": "esbuild app.js --bundle --format=iife --target=es2018 --sourcemap --outfile=bundle.js",
+    "build:watch": "esbuild app.js --bundle --format=iife --target=es2018 --sourcemap --outfile=bundle.js --watch",
+    "serve": "python3 -m http.server 5173"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/almaredan/rhytm-trainer.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/almaredan/rhytm-trainer/issues"
+  },
+  "homepage": "https://github.com/almaredan/rhytm-trainer#readme",
+  "dependencies": {
+    "vexflow": "^5.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.1"
+  }
+}

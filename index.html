@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pulse Forge Rhythm Trainer</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-orb orb-a" aria-hidden="true"></div>
+    <div class="bg-orb orb-b" aria-hidden="true"></div>
+
+    <main class="app-shell">
+      <header class="hero">
+        <p class="eyebrow">Rhythm Ear Training</p>
+        <h1>Forge The Groove</h1>
+        <p class="hero-copy">
+          Generate a rhythm, listen to it as MIDI, and notate it directly on staff
+          lines with proper note values, dots, rests, and ligatures.
+        </p>
+      </header>
+
+      <section class="control-panel" aria-label="Trainer controls">
+        <div class="control-row primary-actions">
+          <button id="generateBtn" class="btn btn-hot" type="button">Generate Rhythm</button>
+          <button id="playTargetBtn" class="btn" type="button">Play Generated</button>
+          <button id="playAttemptBtn" class="btn" type="button">Play My Notation</button>
+          <button id="stopBtn" class="btn btn-soft" type="button" disabled>Stop</button>
+        </div>
+
+        <div class="control-row">
+          <label for="tempoInput">Tempo <span id="tempoValue">92 BPM</span></label>
+          <input id="tempoInput" type="range" min="55" max="160" value="92" />
+
+          <label class="toggle-label" for="metronomeToggle">
+            <input id="metronomeToggle" type="checkbox" /> Metronome
+          </label>
+
+          <label for="barsSelect">Length</label>
+          <select id="barsSelect">
+            <option value="1">1 bar</option>
+            <option value="2" selected>2 bars</option>
+            <option value="3">3 bars</option>
+            <option value="4">4 bars</option>
+            <option value="6">6 bars</option>
+            <option value="8">8 bars</option>
+          </select>
+
+          <label for="rhythmModeSelect">Mode</label>
+          <select id="rhythmModeSelect">
+            <option value="straight" selected>Straight 16ths</option>
+            <option value="swing8">Swing 8ths</option>
+            <option value="triplet">Triplets (3 per beat)</option>
+          </select>
+
+          <label for="densitySelect">Density</label>
+          <select id="densitySelect">
+            <option value="simple">Simple</option>
+            <option value="medium" selected>Medium</option>
+            <option value="busy">Busy</option>
+          </select>
+        </div>
+
+        <div class="control-row">
+          <p class="staff-input-hint">Click on Your Staff to place a value.</p>
+
+          <button id="undoValueBtn" class="btn" type="button">Undo Value</button>
+          <span id="entryProgress" class="entry-progress">Filled: 0 / 32 units</span>
+        </div>
+
+        <div class="control-row legacy-entry-controls" aria-hidden="true">
+          <label for="valueSelect">Value</label>
+          <select id="valueSelect"></select>
+
+          <label class="toggle-label" for="dottedToggle">
+            <input id="dottedToggle" type="checkbox" /> Dot
+          </label>
+
+          <label class="toggle-label" for="restToggle">
+            <input id="restToggle" type="checkbox" /> Rest
+          </label>
+
+          <label class="toggle-label" for="tieToggle">
+            <input id="tieToggle" type="checkbox" /> Ligature to Next
+          </label>
+
+          <button id="addValueBtn" class="btn" type="button">Insert Value</button>
+        </div>
+
+        <div class="control-row legacy-entry-controls" aria-hidden="true">
+          <label for="notationStyleSelect">Grid Style</label>
+          <select id="notationStyleSelect">
+            <option value="compact" selected>Compact</option>
+            <option value="expanded">Expanded</option>
+          </select>
+        </div>
+
+        <div class="control-row">
+          <button id="enableMidiBtn" class="btn" type="button">Enable MIDI</button>
+          <label for="midiOutputSelect">Output</label>
+          <select id="midiOutputSelect">
+            <option value="__internal_bass" selected>Internal bass synth (C2)</option>
+            <option value="__internal_drum">Internal drum synth (fallback)</option>
+          </select>
+
+          <button id="clearBtn" class="btn" type="button">Clear Notation</button>
+          <button id="checkBtn" class="btn" type="button">Check Answer</button>
+          <button id="revealBtn" class="btn btn-soft" type="button">Reveal Answer</button>
+        </div>
+      </section>
+
+      <section class="mode-tabs" aria-label="App sections" role="tablist">
+        <button
+          id="trainerTabBtn"
+          class="tab-btn active"
+          type="button"
+          role="tab"
+          aria-selected="true"
+          aria-controls="trainerTabPanel"
+        >
+          Notation Trainer
+        </button>
+        <button
+          id="quizTabBtn"
+          class="tab-btn"
+          type="button"
+          role="tab"
+          aria-selected="false"
+          aria-controls="quizTabPanel"
+        >
+          Rhythm Quiz
+        </button>
+      </section>
+
+      <section id="trainerTabPanel" class="board tab-panel" aria-label="Rhythm notation board" role="tabpanel">
+        <div class="row-header">
+          <h2>Generated Staff</h2>
+          <p>Hidden by default. Use Reveal Answer when you are done.</p>
+        </div>
+        <div class="staff-panels single">
+          <section class="staff-card" aria-label="Generated staff preview">
+            <div id="targetStaff" class="staff-canvas-wrap"></div>
+          </section>
+        </div>
+
+        <div id="targetGrid" class="rhythm-grid target-grid hidden-grid" aria-label="Generated rhythm grid"></div>
+
+        <div class="row-header">
+          <h2>Your Staff</h2>
+          <p id="notationHint">Click on staff to place note/rest value (normal, dot, or ligature).</p>
+        </div>
+        <div class="staff-panels single">
+          <section class="staff-card" aria-label="User staff entry">
+            <div id="userStaff" class="staff-canvas-wrap interactive"></div>
+          </section>
+        </div>
+
+        <div id="userGrid" class="rhythm-grid user-grid hidden-grid" aria-label="User rhythm notation grid"></div>
+      </section>
+
+      <section id="quizTabPanel" class="board quiz-board tab-panel hidden-tab" aria-label="Rhythm quiz section" role="tabpanel">
+        <div class="row-header">
+          <h2>Rhythm Quiz</h2>
+          <p>Generate, listen, then choose the matching notation from 4 options.</p>
+        </div>
+
+        <div class="control-row quiz-controls">
+          <label for="quizDifficultySelect">Difficulty</label>
+          <select id="quizDifficultySelect">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+
+          <button id="generateQuizBtn" class="btn btn-hot" type="button">Generate Quiz</button>
+          <button id="playQuizBtn" class="btn" type="button" disabled>Play Quiz Rhythm</button>
+        </div>
+
+        <div id="quizOptions" class="quiz-options" role="radiogroup" aria-label="Quiz notation choices"></div>
+
+        <p id="quizStatus" class="quiz-status" data-tone="neutral">
+          Generate a quiz round, play it, then pick the matching notation.
+        </p>
+
+        <div id="quizFollowup" class="quiz-followup hidden" data-tone="neutral" aria-live="polite">
+          <p id="quizFollowupText" class="quiz-followup-text"></p>
+          <div class="quiz-followup-actions">
+            <button id="quizReplayBtn" class="btn" type="button">Replay Rhythm</button>
+            <button id="quizNextRoundBtn" class="btn btn-hot" type="button">Another Round</button>
+          </div>
+        </div>
+      </section>
+
+      <div id="staffPromptBackdrop" class="staff-prompt-backdrop hidden" role="presentation">
+        <section class="staff-prompt" role="dialog" aria-modal="true" aria-labelledby="staffPromptTitle">
+          <h3 id="staffPromptTitle">Place On Staff</h3>
+          <p id="staffPromptPosition" class="staff-prompt-position">Position</p>
+
+          <label for="staffPromptType">Type</label>
+          <select id="staffPromptType">
+            <option value="note">Note</option>
+            <option value="rest">Rest</option>
+          </select>
+
+          <label for="staffPromptValue">Value</label>
+          <select id="staffPromptValue"></select>
+
+          <label for="staffPromptVariant">Form</label>
+          <select id="staffPromptVariant">
+            <option value="normal">Normal</option>
+            <option value="dotted">Dot</option>
+            <option value="ligature">Ligature</option>
+          </select>
+
+          <div class="staff-prompt-actions">
+            <button id="staffPromptCancelBtn" class="btn" type="button">Cancel</button>
+            <button id="staffPromptPlaceBtn" class="btn btn-hot" type="button">Place</button>
+          </div>
+        </section>
+      </div>
+
+      <section id="feedbackCard" class="feedback" data-tone="neutral" aria-live="polite">
+        <p id="statusText">Generate a rhythm to begin.</p>
+        <div class="stats">
+          <span id="exerciseStat">Exercise: 2 bars, Straight 16ths</span>
+          <span id="accuracyStat">Accuracy: --</span>
+          <span id="hintStat">Correct Segments: --</span>
+        </div>
+      </section>
+    </main>
+
+    <script src="bundle.js"></script>
+  </body>
+</html>
